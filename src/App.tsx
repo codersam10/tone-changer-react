@@ -1,20 +1,29 @@
 import React from "react";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 
 const tones = [
   "casual",
   "polite",
-  "professional",
-  "enthusiastic",
+  "grateful",
   "sarcastic",
+  "exited",
+  "professional",
+  "angry",
   "serious",
-  "assertive",
+  "guilty",
 ];
 
 export default function App() {
   const [preferredTone, setPreferredTone] = React.useState(tones[0]);
   const [text, setText] = React.useState("");
-  const [transformedText, setTransformedText] = React.useState("");
+
+  type TransformedText =
+    | null
+    | {
+        text: string;
+      }[];
+  const [transformedText, setTransformedText] =
+    React.useState<TransformedText>(null);
   const [isLoading, setIsLoading] = React.useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,28 +35,55 @@ export default function App() {
       setIsLoading(true);
       const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GOOGLE_API_KEY);
 
-      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+      const schema = {
+        description: "Rephrased variations of the text",
+        type: SchemaType.ARRAY,
+        items: {
+          type: SchemaType.OBJECT,
+          properties: {
+            text: {
+              type: SchemaType.STRING,
+              description: "variation of the text",
+              nullable: false,
+            },
+          },
+          required: ["text"],
+        },
+      };
 
-      const prompt = `You are an expert english language professional. Rephrase this sentence in ${preferredTone} tone: ${text}`;
+      const model = genAI.getGenerativeModel({
+        model: "gemini-1.5-flash",
+        systemInstruction:
+          "You are an expert english language professional. Generate FIVE distinct variations of the given text.",
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: schema,
+        },
+      });
+
+      const prompt = ` Rephrase this sentence in ${preferredTone} tone: ${text}`;
 
       const result = await model.generateContent(prompt);
+      const response = await JSON.parse(result.response.text());
+      console.log(response);
+      setTransformedText(response);
       setIsLoading(false);
-      setTransformedText(result.response.text());
     } catch (error) {
+      setIsLoading(false);
       console.error(error);
     }
   };
 
   return (
-    <div className="flex flex-col items-center mt-10 min-h-screen px-4 max-w-2xl mx-auto">
-      <h1 className="text-5xl font-bold">Tone Changer</h1>
+    <div className="wrapper flex flex-col items-center mt-2 min-h-screen px-4 py-4 max-w-2xl mx-auto shadow-current shadow-xl md:rounded-2xl">
+      <h1 className="text-5xl font-bold ">Tone Changer</h1>
       <form
         className="mt-4 w-full"
         onSubmit={handleSubmit}
       >
-        <div className="flex border-2 rounded-md overflow-hidden ">
+        <div className="flex border-2 rounded-md overflow-hidden h-24">
           <select
-            className="p-2 border-3 h-full"
+            className="p-2 border-r-2 h-full"
             value={preferredTone}
             onChange={(e) => setPreferredTone(e.target.value)}
             name="tone"
@@ -63,35 +99,53 @@ export default function App() {
               </option>
             ))}
           </select>
-          <input
-            className="p-2 w-full"
+          <textarea
+            className="resize-none min-h-full p-2 w-full"
             placeholder="Enter text"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            type="text"
             required
           />
         </div>
         <button
-          className="w-full border rounded-md active:scale-98 p-2 mt-3"
+          className={`w-full shadow-current shadow-sm rounded-md p-2 mt-3 ${
+            isLoading ? "opacity-50" : "active:scale-98"
+          }`}
           type="submit"
+          disabled={isLoading}
         >
           Submit
         </button>
       </form>
-      <div className="pt-4">
-        {transformedText && (
-          <button
-            className="border px-2 py-1 rounded-sm"
-            onClick={() => navigator.clipboard.writeText(transformedText)}
-          >
-            Copy Text
-          </button>
-        )}
+
+      <div className="response-container mt-5 pt-4 p-3 rounded-xl w-full">
         {isLoading ? (
-          <p className="animate-pulse">Loading...</p>
+          <p className="animate-pulse"> "Loading..."</p>
         ) : (
-          <p className="w-full">{transformedText}</p>
+          <div className="flex flex-col gap-5">
+            {transformedText &&
+              transformedText.map(
+                (variation: { text: string }, index: number) => (
+                  <div
+                    key={index}
+                    className="flex flex-col"
+                  >
+                    <p className="flex justify-between">
+                      <span className="font-bold">Variation {index + 1}:</span>
+                    </p>
+                    <p
+                      className="cursor-pointer"
+                      title="Click to copy"
+                      onClick={() =>
+                        navigator.clipboard.writeText(variation.text)
+                      }
+                    >
+                      {variation.text}
+                    </p>
+                  </div>
+                )
+              )}
+          </div>
         )}
       </div>
     </div>

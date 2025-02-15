@@ -4,11 +4,7 @@
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -17,13 +13,37 @@
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    color: hsl(208, 37%, 20%);
+    background-color: hsl(0, 0%, 100%);
   }
   a:hover {
-    color: #747bff;
+    color: hsl(237, 100%, 73%);
   }
-  button {
-    background-color: #f9f9f9;
+  .wrapper{
+    background-color: hsl(0, 0%, 90%);
+  }
+
+  .response-container{
+    background-color: hsl(0, 0%, 95%);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  * {
+    color: hsl(0, 0%, 100%);
+    background-color: hsl(0, 0%, 20%);
+    box-shadow: hsl(0, 0%, 100%);
+  }
+
+  h1{
+    background-color: hsl(0, 0%, 10%);
+  }
+
+  form{
+    background-color: hsl(0, 0%, 10%);
+  }
+
+  .wrapper{
+    background-color: hsl(0, 0%, 10%);
   }
 }
