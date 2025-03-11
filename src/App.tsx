@@ -1,36 +1,37 @@
 import React from "react";
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 
-const tones = [
-  "casual",
-  "polite",
-  "grateful",
-  "sarcastic",
-  "exited",
-  "professional",
-  "angry",
-  "serious",
-  "guilty",
-];
-
-export default function App() {
-  const [preferredTone, setPreferredTone] = React.useState(tones[0]);
-  const [text, setText] = React.useState("");
-
-  type TransformedText =
+type TransformedText =
     | null
     | {
-        text: string;
-      }[];
+      text: string;
+    }[];
+
+export default function App() {
+  const tones = [
+    "casual",
+    "polite",
+    "grateful",
+    "sarcastic",
+    "exited",
+    "professional",
+    "angry",
+    "serious",
+    "guilty",
+  ];
+    
+  const [preferredTone, setPreferredTone] = React.useState(tones[0]);
+  const [text, setText] = React.useState("");
   const [transformedText, setTransformedText] =
     React.useState<TransformedText>(null);
   const [isLoading, setIsLoading] = React.useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!preferredTone && !text) {
+    if (!preferredTone || !text) {
       return console.error("Please enter a tone and text");
     }
+
     try {
       setIsLoading(true);
       const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GOOGLE_API_KEY);
@@ -65,7 +66,6 @@ export default function App() {
 
       const result = await model.generateContent(prompt);
       const response = await JSON.parse(result.response.text());
-      console.log(response);
       setTransformedText(response);
       setIsLoading(false);
     } catch (error) {
@@ -74,8 +74,13 @@ export default function App() {
     }
   };
 
+  const handleToneChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setPreferredTone(e.target.value);
+    handleSubmit(e);
+  };
+
   return (
-    <div className="wrapper flex flex-col items-center mt-2 min-h-screen px-4 py-4 max-w-2xl mx-auto shadow-current shadow-xl md:rounded-2xl">
+    <div className="wrapper flex flex-col items-center md:my-2 h-screen md:h-[95vh] px-4 py-4 max-w-2xl mx-auto shadow-current shadow-md md:rounded-2xl">
       <h1 className="text-5xl font-bold ">Tone Changer</h1>
       <form
         className="mt-4 w-full"
@@ -85,7 +90,7 @@ export default function App() {
           <select
             className="p-2 border-r-2 h-full"
             value={preferredTone}
-            onChange={(e) => setPreferredTone(e.target.value)}
+            onChange={handleToneChange}
             name="tone"
             id="tone"
             required
@@ -108,9 +113,8 @@ export default function App() {
           />
         </div>
         <button
-          className={`w-full shadow-current shadow-sm rounded-md p-2 mt-3 ${
-            isLoading ? "opacity-50" : "active:scale-98"
-          }`}
+          className={`w-full shadow-current shadow-sm rounded-md p-2 mt-3 ${isLoading ? "opacity-50" : "active:scale-98"
+            }`}
           type="submit"
           disabled={isLoading}
         >
@@ -118,9 +122,9 @@ export default function App() {
         </button>
       </form>
 
-      <div className="response-container mt-5 pt-4 p-3 rounded-xl w-full">
+      <div className={`response-container mt-5 ${(transformedText || isLoading) && "p-3"} rounded-xl w-full overflow-y-scroll`}>
         {isLoading ? (
-          <p className="animate-pulse"> "Loading..."</p>
+          <p className="animate-pulse"> Loading...</p>
         ) : (
           <div className="flex flex-col gap-5">
             {transformedText &&
