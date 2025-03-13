@@ -1,11 +1,12 @@
 import React from "react";
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
+import { ToastContainer, toast, Bounce } from "react-toastify";
 
 type TransformedText =
-    | null
-    | {
-      text: string;
-    }[];
+  | null
+  | {
+    text: string;
+  }[];
 
 export default function App() {
   const tones = [
@@ -19,7 +20,7 @@ export default function App() {
     "serious",
     "guilty",
   ];
-    
+
   const [preferredTone, setPreferredTone] = React.useState(tones[0]);
   const [text, setText] = React.useState("");
   const [transformedText, setTransformedText] =
@@ -79,9 +80,24 @@ export default function App() {
     handleSubmit(e);
   };
 
+  const copyText = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.info('Text Copied!', {
+      position: "top-center",
+      autoClose: 3000,
+      hideProgressBar: true,
+      closeOnClick: false,
+      pauseOnHover: false,
+      draggable: true,
+      progress: undefined,
+      theme: "colored",
+      transition: Bounce,
+    });
+  }
+
   return (
-    <div className="wrapper flex flex-col items-center md:my-2 h-screen md:h-[95vh] px-4 py-4 max-w-2xl mx-auto shadow-current shadow-md md:rounded-2xl">
-      <h1 className="text-5xl font-bold ">Tone Changer</h1>
+    <div className="wrapper flex dark:bg-[hsl(0,0%,15%)] flex-col items-center md:my-2 h-screen md:h-[95vh] px-4 py-4 max-w-2xl mx-auto shadow-current shadow-md md:rounded-2xl">
+      <h1 className="text-5xl font-bold">Tone Changer</h1>
       <form
         className="mt-4 w-full"
         onSubmit={handleSubmit}
@@ -126,23 +142,23 @@ export default function App() {
         {isLoading ? (
           <p className="animate-pulse"> Loading...</p>
         ) : (
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-1">
             {transformedText &&
               transformedText.map(
                 (variation: { text: string }, index: number) => (
                   <div
                     key={index}
-                    className="flex flex-col"
+                    className="variation flex flex-col hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md p-2"
                   >
-                    <p className="flex justify-between">
-                      <span className="font-bold">Variation {index + 1}:</span>
+                    <p className="flex justify-between font-bold">
+                      Variation {index + 1}:
                     </p>
                     <p
                       className="cursor-pointer"
                       title="Click to copy"
-                      onClick={() =>
-                        navigator.clipboard.writeText(variation.text)
-                      }
+                      onClick={() => {
+                        copyText(variation.text);
+                      }}
                     >
                       {variation.text}
                     </p>
@@ -152,6 +168,19 @@ export default function App() {
           </div>
         )}
       </div>
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar
+        newestOnTop={false}
+        closeOnClick={false}
+        rtl={false}
+        pauseOnFocusLoss={false}
+        draggable
+        pauseOnHover={false}
+        theme="colored"
+        transition={Bounce}
+      />
     </div>
   );
 }
