@@ -96,7 +96,7 @@ export default function App() {
   }
 
   return (
-    <div className="wrapper flex dark:bg-[hsl(0,0%,15%)] flex-col items-center md:my-2 h-screen md:h-[95vh] px-4 py-4 max-w-2xl mx-auto shadow-current shadow-md md:rounded-2xl">
+    <div className="wrapper flex dark:bg-[hsl(0,0%,15%)] flex-col items-center md:my-2 h-screen md:h-[95vh] px-4 py-4 max-w-2xl mx-auto shadow-current shadow-lg md:rounded-2xl">
       <h1 className="text-5xl font-bold">Tone Changer</h1>
       <form
         className="mt-4 w-full"
@@ -104,7 +104,7 @@ export default function App() {
       >
         <div className="flex border-2 rounded-md overflow-hidden h-24">
           <select
-            className="p-2 border-r-2 h-full"
+            className="p-2 border-r-2 h-full dark:bg-[hsl(0,0%,15%)]"
             value={preferredTone}
             onChange={handleToneChange}
             name="tone"
@@ -129,12 +129,11 @@ export default function App() {
           />
         </div>
         <button
-          className={`w-full shadow-current shadow-sm rounded-md p-2 mt-3 ${isLoading ? "opacity-50" : "active:scale-98"
-            }`}
+          className={`w-full shadow-current shadow-md  rounded-md p-2 mt-3 ${isLoading ? "opacity-50" : "active:shadow-xs"}`}
           type="submit"
           disabled={isLoading}
         >
-          Submit
+          {isLoading ? "Generating..." : "Generate"}
         </button>
       </form>
 
@@ -148,17 +147,23 @@ export default function App() {
                 (variation: { text: string }, index: number) => (
                   <div
                     key={index}
-                    className="variation flex flex-col hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md p-2"
+                    className="variation flex flex-col hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md p-2 cursor-pointer"
+                    title="Click to copy"
+                    onClick={() => {
+                      copyText(variation.text);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        copyText(variation.text);
+                      }
+                    }}
+                    tabIndex={0}
                   >
                     <p className="flex justify-between font-bold">
                       Variation {index + 1}:
                     </p>
                     <p
-                      className="cursor-pointer"
-                      title="Click to copy"
-                      onClick={() => {
-                        copyText(variation.text);
-                      }}
+                      className=""
                     >
                       {variation.text}
                     </p>
