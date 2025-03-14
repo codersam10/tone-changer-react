@@ -54,7 +54,7 @@ export default function App() {
       };
 
       const model = genAI.getGenerativeModel({
-        model: "gemini-1.5-flash",
+        model: "gemini-2.0-flash",
         systemInstruction:
           "You are an expert english language professional. Generate FIVE distinct variations of the given text.",
         generationConfig: {
